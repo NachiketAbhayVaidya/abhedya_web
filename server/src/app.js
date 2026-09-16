@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import path from "node:path";
+import fs from "node:fs";
 
 import authRoutes from "./routes/authRoutes.js";
 import guardRoutes from "./routes/guardRoutes.js";
@@ -19,7 +20,7 @@ export function createApp() {
 
   app.use(
     cors({
-      origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+      origin: process.env.CLIENT_ORIGIN || process.env.RENDER_EXTERNAL_URL || "http://localhost:5173",
       credentials: true,
     })
   );
@@ -39,6 +40,16 @@ export function createApp() {
   app.use("/api/payments", paymentRoutes);
   app.use("/api/complaints", complaintRoutes);
   app.use("/api/dashboard", dashboardRoutes);
+
+  // In production the client is built and this server also serves it, so the
+  // whole app is a single Render web service (no separate static host needed).
+  const clientDistPath = path.join(process.cwd(), "..", "client", "dist");
+  if (process.env.NODE_ENV === "production" && fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get(/^(?!\/api|\/uploads).*/, (req, res) => {
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+  }
 
   app.use(notFoundHandler);
   app.use(errorHandler);

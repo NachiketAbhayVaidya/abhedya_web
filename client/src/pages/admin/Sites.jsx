@@ -18,6 +18,7 @@ export default function Sites() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const { data: sites, isLoading } = useQuery({ queryKey: ["sites"], queryFn: () => sitesApi.list() });
   const { data: clients } = useQuery({ queryKey: ["clients"], queryFn: clientsApi.list });
@@ -32,6 +33,30 @@ export default function Sites() {
     },
     onError: (err) => toast.error(err.message),
   });
+
+  function handleUseCurrentLocation() {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          lat: pos.coords.latitude.toFixed(6),
+          lng: pos.coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+        toast.success("Location filled in");
+      },
+      (err) => {
+        setLocating(false);
+        toast.error(err.message || "Unable to get your location");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -81,6 +106,11 @@ export default function Sites() {
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
+            <div className="sm:col-span-2">
+              <Button type="button" variant="secondary" onClick={handleUseCurrentLocation} disabled={locating}>
+                {locating ? "Getting location..." : "Use my current location"}
+              </Button>
+            </div>
             <Input
               label="Latitude"
               type="number"
