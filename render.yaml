@@ -3,7 +3,6 @@ services:
     name: abhedya-security
     runtime: node
     plan: free
-    rootDir: .
     buildCommand: npm install --prefix server && npm run build
     startCommand: npm start
     envVars:
@@ -11,6 +10,8 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: NODE_VERSION
+        value: 22.13.1
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
