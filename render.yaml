@@ -7,16 +7,16 @@ services:
     startCommand: npm start
     envVars:
       - key: NODE_ENV
-        value: production
+        value: "production"
       - key: PORT
-        value: 10000
+        value: "10000"
       - key: NODE_VERSION
-        value: 22.13.1
+        value: "22.13.1"
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: "7d"
       - key: COOKIE_SECURE
-        value: true
+        value: "true"
